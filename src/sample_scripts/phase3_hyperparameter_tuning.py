@@ -173,14 +173,32 @@ class HyperparameterTuner:
             end_time = time.time()
             training_time = end_time - start_time
             
+            # Extract metrics correctly from training history
+            training_hist = training_history.get('training_history', {})
+            val_metrics_list = training_hist.get('val_metrics', [])
+            
+            # Calculate best metrics across all epochs
+            best_char_acc = 0.0
+            best_seq_acc = 0.0
+            
+            if val_metrics_list:
+                char_accuracies = [m.get('char_accuracy', 0.0) for m in val_metrics_list]
+                seq_accuracies = [m.get('seq_accuracy', 0.0) for m in val_metrics_list]
+                best_char_acc = max(char_accuracies) if char_accuracies else 0.0
+                best_seq_acc = max(seq_accuracies) if seq_accuracies else 0.0
+            
+            # Get final loss
+            train_losses = training_hist.get('train_loss', [])
+            final_train_loss = train_losses[-1] if train_losses else float('inf')
+            
             # Create result
             result = {
                 'experiment_name': experiment_name,
                 'status': 'completed',
                 'training_time': training_time,
-                'best_val_char_accuracy': max(training_history.get('val_char_accuracy', [0])),
-                'best_val_seq_accuracy': max(training_history.get('val_seq_accuracy', [0])),
-                'final_train_loss': training_history.get('train_loss', [float('inf')])[-1],
+                'best_val_char_accuracy': best_char_acc,
+                'best_val_seq_accuracy': best_seq_acc,
+                'final_train_loss': final_train_loss,
                 'hyperparameters': {
                     'model_name': experiment_config['model']['name'],
                     'batch_size': experiment_config['training']['batch_size'],
@@ -188,7 +206,8 @@ class HyperparameterTuner:
                     'weight_decay': experiment_config['training']['weight_decay'],
                     'loss_type': experiment_config['training']['loss_type'],
                     'scheduler_type': experiment_config['scheduler']['type']
-                }
+                },
+                'training_history': training_hist  # Include full history for analysis
             }
             
             self.logger.info(f"Experiment {experiment_name} completed successfully!")

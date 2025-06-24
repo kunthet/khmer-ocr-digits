@@ -29,6 +29,16 @@ base_config: &base
     monitor: "val_char_accuracy"
     mode: "max"
 
+# Base training configuration for reuse
+base_training: &base_training
+  device: "auto"
+  mixed_precision: false
+  gradient_clip_norm: 1.0
+  log_every_n_steps: 25
+  save_every_n_epochs: 5
+  keep_n_checkpoints: 3
+  use_tensorboard: true
+
 # Experiment configurations for hyperparameter tuning
 experiments:
   
@@ -40,17 +50,11 @@ experiments:
       name: "medium"
       config_path: "config/model_config.yaml"
     training:
-      device: "auto"
-      mixed_precision: false
-      gradient_clip_norm: 1.0
-      log_every_n_steps: 25
-      save_every_n_epochs: 5
-      keep_n_checkpoints: 3
-      use_tensorboard: true
+      <<: *base_training
       batch_size: 64  # Increased for better gradient estimates
       learning_rate: 0.002  # Slightly higher for faster convergence
       weight_decay: 0.0001
-      num_epochs: 40
+      num_epochs: 40 # switch for full training
       loss_type: "crossentropy"
       label_smoothing: 0.1  # Added for regularization
     optimizer:
@@ -71,17 +75,11 @@ experiments:
       name: "medium"
       config_path: "config/model_config.yaml"
     training:
-      device: "auto"
-      mixed_precision: false
-      gradient_clip_norm: 1.0
-      log_every_n_steps: 25
-      save_every_n_epochs: 5
-      keep_n_checkpoints: 3
-      use_tensorboard: true
+      <<: *base_training
       batch_size: 128  # Large batch for stable gradients
       learning_rate: 0.003
       weight_decay: 0.0002
-      num_epochs: 35
+      num_epochs: 35 # switch for full training
       loss_type: "crossentropy"
       label_smoothing: 0.15
     optimizer:
@@ -102,17 +100,11 @@ experiments:
       name: "small"
       config_path: "config/model_config.yaml"
     training:
-      device: "auto"
-      mixed_precision: false
-      gradient_clip_norm: 1.0
-      log_every_n_steps: 25
-      save_every_n_epochs: 5
-      keep_n_checkpoints: 3
-      use_tensorboard: true
+      <<: *base_training
       batch_size: 32
       learning_rate: 0.001
       weight_decay: 0.0001
-      num_epochs: 50
+      num_epochs: 50 # switch for full training
       loss_type: "crossentropy"
       label_smoothing: 0.05
     optimizer:
@@ -134,11 +126,11 @@ experiments:
       name: "medium"
       config_path: "config/model_config.yaml"
     training:
-      <<: *base.training
+      <<: *base_training
       batch_size: 64
       learning_rate: 0.0015
       weight_decay: 0.0001
-      num_epochs: 40
+      num_epochs: 40 # switch for full training
       loss_type: "focal"
       focal_alpha: 1.0
       focal_gamma: 2.0
@@ -157,14 +149,14 @@ experiments:
     <<: *base
     experiment_name: "ctc_alignment_free"
     model:
-      name: "ctc"
+      name: "ctc_small"  # Fixed model name
       config_path: "config/model_config.yaml"
     training:
-      <<: *base.training
+      <<: *base_training
       batch_size: 64
       learning_rate: 0.001
       weight_decay: 0.0001
-      num_epochs: 45
+      num_epochs: 45 # switch for full training
       loss_type: "ctc"
     optimizer:
       type: "adamw"
@@ -184,11 +176,11 @@ experiments:
       name: "large"
       config_path: "config/model_config.yaml"
     training:
-      <<: *base.training
+      <<: *base_training
       batch_size: 32  # Smaller batch due to model size
       learning_rate: 0.0005  # Lower LR for large model
       weight_decay: 0.0005  # Higher weight decay
-      num_epochs: 30
+      num_epochs: 30 # switch for full training
       loss_type: "crossentropy"
       label_smoothing: 0.2
       gradient_clip_norm: 0.5  # Aggressive clipping
@@ -214,11 +206,11 @@ experiments:
       name: "medium"
       config_path: "config/model_config.yaml"
     training:
-      <<: *base.training
+      <<: *base_training
       batch_size: 96
       learning_rate: 0.005  # High initial LR
       weight_decay: 0.0001
-      num_epochs: 25
+      num_epochs: 25 # switch for full training
       loss_type: "crossentropy"
       label_smoothing: 0.1
     optimizer:
